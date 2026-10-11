@@ -13,7 +13,7 @@ async function shot(name){await page.screenshot({path:`qa/v03-${name}.png`});rep
 try{
   await page.goto('http://127.0.0.1:5182/?qa=1');await page.waitForFunction(()=>window.__islandDebug?.().phase==='intro',null,{timeout:60000});
   await page.locator('#start').click();await page.waitForTimeout(300);const initial=await state();
-  check('six distinct species and 17 residents instantiate',new Set(initial.survival.creatures.map(c=>c.kind)).size===6&&initial.wildlife.length===17);
+  check('seven distinct species and 18 residents instantiate',new Set(initial.survival.creatures.map(c=>c.kind)).size===7&&initial.wildlife.length===18);
   check('new species have their own authored rigs and clips',initial.wildlife.find(c=>c.id==='raptor-0').clips.includes('Sprint')&&initial.wildlife.find(c=>c.id==='diplodocus-0').clips.includes('Walk')&&initial.wildlife.find(c=>c.id==='crow-0').clips[0]==='Flight');
   check('T-rex uses physically plausible dielectric skin',Math.abs(initial.pose.skinIor-1.45)<.001&&initial.pose.roughness>.7);
   await page.waitForTimeout(1500);const breathing=await state();check('breathing deforms the chest bone',breathing.pose.breathingReady&&Math.abs(breathing.pose.chestScale-initial.pose.chestScale)>.001);
