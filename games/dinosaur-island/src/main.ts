@@ -30,7 +30,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
     <div id="compass" class="compass hidden"><span>W</span><i></i><span id="heading">N</span><i></i><span>E</span><b>▾</b></div>
     <div id="location" class="location"><span class="location-dot"></span><div><small>THE SOUTHERN SHORE</small><span id="biome">南部海岸</span></div><span class="coordinates">09° 24′ N<br>084° 08′ W</span></div>
     <div id="play-hud" class="hidden"><div class="species"><small>TYRANNOSAURUS REX</small><div>霸王龙 <span id="motion">静静观察</span></div><div class="step-line"><i></i><span>FOLLOW YOUR INSTINCT</span></div></div><div class="controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</span><span><kbd>Shift</kbd> 奔跑</span><button id="roar-button"><kbd>R</kbd> 吼叫</button><span class="mouse-help">拖动鼠标 · 环顾四周</span><button id="photo" title="隐藏界面 · P">${icon('camera')}</button></div><div class="map-wrap"><canvas id="map" width="160" height="160" aria-label="岛屿位置示意图"></canvas><span>N</span><small>ISLA PERDIDA</small></div></div>
-    <div id="photo-hint" class="hidden">摄影视角 · 拖动鼠标环顾 · 按 P 返回 <button id="capture">保存画面</button></div>
+    <div id="photo-hint" class="hidden">摄影视角 · 拖动画面环顾 <button id="capture">保存画面</button><button id="photo-exit">返回游戏</button></div>
     <div id="toast" role="status"></div>
     <footer id="intro-footer"><span>一段关于远古的想象</span><span>AN INTERACTIVE WORLD <i>—</i> BUILT WITH THREE.JS</span><button id="credits-open">资源与致谢 ↗</button></footer>
     <div id="dialog-backdrop" class="hidden"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><button id="dialog-close" class="icon-button">${icon('close')}</button><div class="eyebrow">YOUR EXPEDITION</div><h2 id="dialog-title">暂歇片刻</h2><p>岛屿会在这里等你。</p><div class="setting-row"><label for="quality">画面质量</label><select id="quality"><option value="high">高 · 完整光影</option><option value="balanced">流畅 · 降低分辨率</option></select></div><div class="setting-row"><label for="mute">环境音效</label><input type="checkbox" id="mute" checked/></div><div class="setting-row"><span>操作方式</span><small>WASD 移动 / Shift 奔跑 / R 吼叫<br>鼠标拖拽环顾 / 滚轮调整距离 / P 摄影</small></div><button id="resume" class="primary">继续探索 ${icon('arrow')}</button><button id="reset" class="text-button">回到南部海岸</button><button id="dialog-credits" class="text-button">查看资源与致谢</button></section></div>
@@ -82,7 +82,7 @@ function setMuted(value:boolean){muted=value;sound.setMuted(muted);$('sound').cl
 function pause(){if(phase!=='playing'&&phase!=='intro')return;touchControls.reset();const from=phase;$('dialog-backdrop').dataset.from=from;phase='paused';controller.setEnabled(false);sound.pause();$('dialog-backdrop').classList.remove('hidden');$('resume').focus();}
 function resume(){if(phase!=='paused')return;phase=$('dialog-backdrop').dataset.from==='intro'?'intro':'playing';controller.setEnabled(phase==='playing');if(phase==='playing')sound.resume();$('dialog-backdrop').classList.add('hidden');}
 function showCredits(){if(phase==='playing')pause();$('credits-backdrop').classList.remove('hidden');$('credits-close').focus();}
-function togglePhoto(){if(phase!=='playing')return;photo=!photo;$('experience').classList.toggle('photo-mode',photo);$('photo-hint').classList.toggle('hidden',!photo);}
+function togglePhoto(){if(phase!=='playing')return;touchControls.reset();photo=!photo;$('experience').classList.toggle('photo-mode',photo);$('photo-hint').classList.toggle('hidden',!photo);}
 const playerPose=()=>({x:dinosaur.root.position.x,z:dinosaur.root.position.z,heading:controller.state.heading,speed:controller.state.speed,wading:controller.state.wading});
 function makeController(at=spawn){
   const config=PLAYABLE[playerKind];
@@ -114,6 +114,7 @@ document.querySelector<HTMLAnchorElement>('.brand')!.onclick=e=>{e.preventDefaul
 $<HTMLSelectElement>('quality').insertAdjacentHTML('afterbegin','<option value="auto" selected>自适应 · 推荐</option>');
 $<HTMLSelectElement>('quality').onchange=e=>{quality=(e.target as HTMLSelectElement).value;const high=quality==='high';renderer.setPixelRatio(Math.min(devicePixelRatio,high?1.5:quality==='auto'?1:.75));world.setQuality(high||quality==='auto');slowWindows=0;toast(quality==='auto'?'画面会随运行速度自动调整':high?'已开启完整光影':'已切换流畅画质');};
 $('capture').onclick=()=>{renderer.render(world.scene,camera);const a=document.createElement('a');a.download=`isla-perdida-${Date.now()}.png`;a.href=renderer.domElement.toDataURL('image/png');a.click();toast('画面已保存');};
+$('photo-exit').onclick=togglePhoto;
 window.addEventListener('keydown',e=>{if(e.code==='Escape'){if(!$('credits-backdrop').classList.contains('hidden'))$('credits-backdrop').classList.add('hidden');else if(phase==='paused')resume();else pause();}if(e.code==='KeyP'&&!e.repeat)togglePhoto();});
 window.addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.altKey||e.metaKey||/^(INPUT|SELECT|TEXTAREA)$/.test((e.target as HTMLElement)?.tagName))return;if(phase==='playing'&&e.code==='Space'){e.preventDefault();attack();}if(phase==='playing'&&e.code==='KeyE'){e.preventDefault();eat();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&phase==='playing')pause();});

@@ -73,6 +73,7 @@ try{
   }
   if(game.id==='dinosaur-island'){
    await page.locator('#roar-button').tap();check('dinosaur-island: touch roar action',(await page.evaluate(state,game.id)).motion.action==='roar');
+   await page.locator('#photo').tap();check('dinosaur-island: touch enters photo mode',(await page.evaluate(state,game.id)).photo);await page.locator('#photo-exit').tap();check('dinosaur-island: touch returns from photo mode',!(await page.evaluate(state,game.id)).photo&&await page.locator(selectors[game.id].move).isVisible());
   }
   if(game.id==='riverkeeper'){
    const zoom=await page.evaluate(()=>window.__riverTest.world.camera.zoom);await page.locator('#zoom-in').tap();check('riverkeeper: touch zooms camera',await page.evaluate(z=>window.__riverTest.world.camera.zoom>z,zoom));await page.locator('#zoom-out').tap();
