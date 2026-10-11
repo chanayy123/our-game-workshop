@@ -1,0 +1,15 @@
+**/node_modules/
+**/dist/
+**/.npm-cache/
+**/qa/
+**/.deployment/
+**/.asset-work/
+**/.playwright-mcp/
+.site/
+.cache/
+.env
+.env.*
+*.log
+test-results/
+playwright-report/
+*.tsbuildinfo

@@ -1,0 +1,17 @@
+{
+  "name": "our-game-workshop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.17.0" },
+  "scripts": {
+    "setup": "node scripts/workshop.mjs install",
+    "test": "node scripts/workshop.mjs test",
+    "build": "node scripts/workshop.mjs build",
+    "dev": "node scripts/workshop.mjs dev",
+    "preview": "node scripts/serve.mjs",
+    "test:site": "node scripts/site-smoke.mjs",
+    "cloud:setup": "node scripts/cloud-setup.mjs"
+  },
+  "devDependencies": { "@playwright/test": "1.55.1" }
+}

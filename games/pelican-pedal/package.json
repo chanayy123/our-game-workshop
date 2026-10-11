@@ -1,0 +1,24 @@
+{
+  "name": "pelican-pedal-club",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --test scripts/game.test.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "build:pages": "tsc --noEmit && vite build --base=./"
+  },
+  "dependencies": {
+    "@fontsource/dm-sans": "^5.2.6",
+    "@fontsource/fraunces": "^5.2.6",
+    "lucide": "^0.468.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  }
+}

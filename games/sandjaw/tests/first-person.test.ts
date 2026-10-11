@@ -1,0 +1,15 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {relativeMovement,turnView,bearing} from '../src/first-person.ts';
+import {Game,terrainHeight,beach} from '../src/game.ts';
+const close=(a:number,b:number)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
+test('W follows the look heading in every compass direction',()=>{for(const h of [0,Math.PI/2,Math.PI,-Math.PI/2]){const p=relativeMovement(1,0,h);close(p.x,Math.sin(h));close(p.z,Math.cos(h));}});
+test('D strafes right while W and S are opposites',()=>{const right=relativeMovement(0,1,Math.PI);close(right.x,1);close(right.z,0);const forward=relativeMovement(1,0,.9),back=relativeMovement(-1,0,.9);close(forward.x,-back.x);close(forward.z,-back.z);});
+test('view-facing movement preserves orientation while strafing and backing up',()=>{const g=new Game();g.start();g.step(.05,{x:1,z:0,sprint:false,facing:Math.PI});close(g.heading,Math.PI);g.step(.05,{x:0,z:1,sprint:false,facing:Math.PI});close(g.heading,Math.PI);});
+test('mouse right rotates right, mouse up looks up, pitch never flips',()=>{const v=turnView(Math.PI,0,100,-100);assert.ok(v.heading<Math.PI);assert.ok(v.pitch>0);assert.equal(turnView(0,0,0,-100000).pitch,1.08);assert.equal(turnView(0,0,0,100000).pitch,-1.12);});
+test('turning without walking updates the attack direction',()=>{const g=new Game();g.start();g.step(.05,{x:0,z:0,sprint:false,facing:0});assert.ok(g.inReach({x:g.x,z:g.z+2},3));assert.ok(!g.inReach({x:g.x,z:g.z-2},3));});
+test('normal bites cannot capture a person behind the camera',()=>{const g=new Game();g.start();g.x=0;g.z=-4;g.heading=Math.PI;g.humans=[{id:1,x:0,z:-2,home:0,heading:1,state:'walk',timer:0,alive:true,caller:true}];g.bite();assert.equal(g.eaten,0);g.biteCooldown=0;g.heading=0;g.bite();assert.equal(g.eaten,1);});
+test('buried crocodile moves slowly while keeping the chosen heading',()=>{const g=new Game();g.start();g.bury();const {x,z}=g;g.step(.05,{x:1,z:1,sprint:true,facing:1});close(Math.hypot(g.x-x,g.z-z),.09);assert.equal(g.dash,0);assert.equal(g.mode,'buried');assert.equal(g.heading,1);});
+test('compass displays north, east, south, and west consistently',()=>{close(bearing(Math.PI),0);close(bearing(Math.PI/2),90);close(bearing(0),180);close(bearing(-Math.PI/2),270);});
+test('shore slopes into the same seafloor used by the underwater eye',()=>{for(const x of [-45,-10,0,36]){const shore=beach(x);assert.ok(terrainHeight(x,shore-2)>0);assert.ok(terrainHeight(x,shore+3)<-1);close(terrainHeight(x,shore+10),-3.8);}});
+test('solid props stop the eye moving through trunks and rocks',()=>{const g=new Game();g.start();g.x=0;g.z=-4;g.obstacles=[{x:1,z:-4,radius:.4}];for(let i=0;i<30;i++)g.step(.025,{x:1,z:0,sprint:false,facing:0});assert.ok(g.x<.3);g.obstacles=[{x:1,z:10,radius:.7,deep:true}];g.x=0;g.z=10;g.mode='underwater';for(let i=0;i<30;i++)g.step(.025,{x:1,z:0,sprint:false,facing:0});assert.ok(g.x<.1);});

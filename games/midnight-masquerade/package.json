@@ -1,0 +1,25 @@
+{
+  "name": "midnight-masquerade",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5184 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4184 --strictPort",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:browser": "node tools/browser-smoke.mjs",
+    "test:police": "node tools/police-smoke.mjs",
+    "test:playthrough": "node --experimental-strip-types tools/playthrough.mjs",
+    "build:pages": "tsc --noEmit && vite build --base=./"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.180.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "@playwright/test": "^1.55.1"
+  }
+}

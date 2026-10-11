@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Animal asset inspection</title><style>body{margin:0;background:#394744}#label{position:fixed;left:24px;top:22px;color:#eee;font:16px sans-serif}canvas{display:block}</style></head><body><div id="label">Loading actual game asset…</div><script type="module">
+import * as THREE from 'three';
+import {createAnimal} from '/src/animals.ts';
+import {createDinosaur} from '/src/dinosaur.ts';
+const kind=new URLSearchParams(location.search).get('kind')||'diplodocus';
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(1);renderer.shadowMap.enabled=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#394744');scene.add(new THREE.HemisphereLight(0xd4e1ec,0x695644,1.5));
+const sun=new THREE.DirectionalLight(0xffe1b2,3);sun.position.set(-4,8,7);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.MeshStandardMaterial({color:0x606954,roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const actor=kind==='trex'?await createDinosaur({length:8}):await createAnimal(kind,8);scene.add(actor.root);actor.root.rotation.y=.95;
+const box=new THREE.Box3().setFromObject(actor.root,true),size=box.getSize(new THREE.Vector3());const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,100);camera.position.set(10,size.y*.85+2,11);camera.lookAt(0,size.y*.55,0);
+let time=0;const clock=new THREE.Clock();
+document.getElementById('label').textContent=kind+' · actual skinned game model';
+window.__animalInspection=()=>({kind,time,size:new THREE.Box3().setFromObject(actor.root,true).getSize(new THREE.Vector3()).toArray(),clips:actor.clips});
+function draw(){requestAnimationFrame(draw);const dt=Math.min(clock.getDelta(),.05);time+=dt;if(kind==='trex')actor.update(dt,{action:'idle',speed:0});else actor.update(dt,{mode:kind==='crow'?'run':'walk',speed:1,alive:true});renderer.render(scene,camera)}draw();
+</script></body></html>

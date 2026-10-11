@@ -1,0 +1,13 @@
+import {chromium} from '@playwright/test';
+import fs from 'node:fs';
+fs.mkdirSync('qa/first-person',{recursive:true});
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+const page=await browser.newPage({viewport:{width:1440,height:900}});const errors=[];
+page.on('pageerror',e=>errors.push(e.stack));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+await page.goto('http://127.0.0.1:5186/?qa=1');await page.waitForTimeout(1600);await page.screenshot({path:'qa/first-person/01-intro.png'});
+await page.locator('#start').click();await page.waitForTimeout(1400);await page.screenshot({path:'qa/first-person/02-shore.png'});
+console.log(JSON.stringify({stage:'land',errors,state:await page.evaluate(()=>{const s=window.__sandjaw.snapshot();return {view:s.view,fps:s.fps,render:s.render,phase:s.phase};})}));
+await page.evaluate(()=>{const g=window.__sandjaw.game;g.x=-28;g.z=16;g.mode='surface';g.heading=1.8;});await page.waitForTimeout(1500);await page.screenshot({path:'qa/first-person/03-surface.png'});
+await page.keyboard.press('q');await page.waitForTimeout(1400);await page.screenshot({path:'qa/first-person/04-underwater.png'});
+await page.evaluate(()=>{const g=window.__sandjaw.game;g.x=0;g.z=-5;g.mode='land';g.heading=Math.PI;});await page.keyboard.press('e');await page.waitForTimeout(900);await page.screenshot({path:'qa/first-person/05-buried.png'});
+console.log(JSON.stringify({stage:'end',errors}));await browser.close();
