@@ -2,7 +2,7 @@
   {"id":"pelican-pedal","title":"鹈鹕骑行","english":"PELICAN PEDAL CLUB","path":"pelican-pedal/","description":"骑着自行车沿海岸收集小鱼，跳跃、换道、加速，带着午餐抵达灯塔。","controls":"键鼠 / 触屏","start":"#start"},
   {"id":"dinosaur-island","title":"逃离恐龙岛","english":"ESCAPE DINOSAUR ISLAND","path":"","description":"以霸王龙或迅猛龙的视角探索雨林与海岸，奔跑、捕猎，体验失落岛屿的生活。","controls":"键鼠 / 平板触控","start":"#start"},
   {"id":"riverkeeper","title":"溪流手记","english":"RIVERKEEPER","path":"riverkeeper/","description":"用石头和泥土改造河道，挖开支流，让两处干涸的小池重新蓄水。","controls":"键鼠 / 触屏","start":"#start"},
-  {"id":"midnight-masquerade","title":"不许动，盆栽！","english":"MIDNIGHT MASQUERADE","path":"midnight-masquerade/","description":"变成物体藏进夜市，或扮演警察搜寻伪装者，开始一场有声有色的躲猫猫。","controls":"电脑键盘 / 鼠标","start":"#start"},
-  {"id":"shark-sea-survival","title":"白鲨海峡","english":"SHARK SEA SURVIVAL","path":"shark-sea-survival/","description":"驾驶捕捞船横渡海域，坐进铁笼潜入白鲨领地；靠岛伐木修船，继续驶向灯塔。","controls":"电脑键盘 / 鼠标","start":"#start"},
+  {"id":"midnight-masquerade","title":"不许动，盆栽！","english":"MIDNIGHT MASQUERADE","path":"midnight-masquerade/","description":"变成物体藏进夜市，或扮演警察搜寻伪装者，开始一场有声有色的躲猫猫。","controls":"键鼠 / 平板触控","start":"#start"},
+  {"id":"shark-sea-survival","title":"白鲨海峡","english":"SHARK SEA SURVIVAL","path":"shark-sea-survival/","description":"驾驶捕捞船横渡海域，坐进铁笼潜入白鲨领地；靠岛伐木修船，继续驶向灯塔。","controls":"键鼠 / 平板触控","start":"#start"},
   {"id":"sandjaw","title":"伏沙猎手","english":"SANDJAW","path":"sandjaw/","description":"跟随湾鳄探索海岸，潜沙伏击、潜入海底、躲避警察，在冒险中不断成长。","controls":"键鼠 / 触屏","start":"#start"}
 ]

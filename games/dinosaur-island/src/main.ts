@@ -1,3 +1,4 @@
+import { installTouchControls, registerTouchReset } from '../../../shared/touch';
 import * as THREE from 'three';
 import { IslandWorld } from './world';
 import { terrainHeight, riverDepth, riverCenter } from './terrain';
@@ -64,7 +65,7 @@ const world = new IslandWorld();
 const sound = new IslandAudio();
 let controller:DinosaurController, dinosaur:PlayerVisual;
 $('play-hud').insertAdjacentHTML('beforeend',`<div id="touch-pad" aria-label="触屏移动"><button data-direction="forward" aria-label="向前移动">▲</button><button data-direction="left" aria-label="向左移动">◀</button><button data-run aria-label="切换奔跑" aria-pressed="false">奔跑</button><button data-direction="right" aria-label="向右移动">▶</button><button data-direction="back" aria-label="向后移动">▼</button></div>`);
-const touchControls=bindTouchControls($('touch-pad'),()=>controller);
+const touchControls=bindTouchControls($('touch-pad'),()=>controller);registerTouchReset(touchControls.reset);installTouchControls();
 let playerKind:PlayerKind='trex',hurtUntil=0;
 const avatars=new Map<PlayerKind,PlayerVisual>();
 let simulation:SurvivalSimulation;

@@ -11,6 +11,7 @@
     "dev": "node scripts/workshop.mjs dev",
     "preview": "node scripts/serve.mjs",
     "test:site": "node scripts/site-smoke.mjs",
+    "test:tablet": "node scripts/tablet-smoke.mjs",
     "cloud:setup": "node scripts/cloud-setup.mjs"
   },
   "devDependencies": { "@playwright/test": "1.55.1" }

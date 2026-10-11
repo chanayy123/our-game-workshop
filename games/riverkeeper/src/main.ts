@@ -1,3 +1,4 @@
+import { installTouchControls, bindTouchKeys, resetTouchControls } from '../../../shared/touch';
 import './style.css';
 import { Vector3 } from 'three';
 import { WaterSimulation } from './water.ts';
@@ -45,6 +46,9 @@ try { world = new CreekWorld($('world'), sim); }
 catch (error) { $('intro').innerHTML = '<section class="intro-card"><h2>暂时无法绘制溪流</h2><p>请使用支持 WebGL 的浏览器，并开启硬件加速后刷新。</p></section>'; throw error; }
 let tool: Tool = 'rock';
 const keys = new Set<string>();
+const touchKeys=new Set<string>();
+const hasKey=(key:string)=>keys.has(key)||touchKeys.has(key);
+installTouchControls();
 const pointer = { x: -1000, y: -1000, down: false, button: 0 };
 let hover: ReturnType<CreekWorld['pick']> = null;
 let lastEdit = -10, lastCell = -1, gameClock = 0, toastUntil = 0, flashUntil = 0, lastBird = 0, hudClock = 0;
@@ -66,9 +70,9 @@ function interact(force = false) {
  else if(force)notify(chosen==='remove'?'这里还没有改造过。':'这里已到极限，试试旁边的地面。',2);
 }
 function start() { expedition.start();$('intro').hidden=true;void sound.start();notify('先在分岔下方筑坝，再挖开两侧浅褐色的泥口。',6); }
-function closeModal() { $('modal').hidden=true;modalKind='';if(expedition.phase==='paused')expedition.resume();keys.clear();world.renderer.domElement.focus({preventScroll:true}); }
+function closeModal() { $('modal').hidden=true;modalKind='';if(expedition.phase==='paused')expedition.resume();keys.clear();resetTouchControls();world.renderer.domElement.focus({preventScroll:true}); }
 function openModal(kind: 'pause'|'help'|'restart'|'win') {
- keys.clear();pointer.down=false;modalKind=kind;if(active())expedition.pause();
+ keys.clear();resetTouchControls();pointer.down=false;modalKind=kind;if(active())expedition.pause();
  const content = $('modal-content');
  if(kind==='help')content.innerHTML=`<div class="eyebrow">THE POCKET FIELD GUIDE</div><h2>顺着水的脾气来。</h2><div class="help-grid"><b>WASD / ↑↓←→</b><span>沿画面方向走动；走近目标再施工。</span><b>1 石头</b><span>放下大石块，横着排成坝，水会积起来。</span><b>2 泥土</b><span>抬高地面，填缝或围出新河岸。</span><b>3 挖掘</b><span>降低地面；长按可连续挖开支流泥口。</span><b>4 / 右键</b><span>移除改造，恢复这里原来的地形。</span><b>水蛇</b><span>红圈是警告，及时离开。被咬后上干地，恢复 10 秒；重入水中会重新计时。</span></div><p>让两池都有水，再保持 12 秒。没有限时，也没有材料数量限制。</p><button class="primary" data-action="resume">明白了，回到溪边</button>`;
  else if(kind==='win')content.innerHTML=`<div class="eyebrow">FIELD NOTES / COMPLETE</div><h2>溪流找到了新路。</h2><p>两处小池重新有了水，湿地也醒来了。<br>这一小段河流，留下了你的想法。</p><div class="result-stats"><div><strong>${formatTime(expedition.elapsed)}</strong><span>溪边时光</span></div><div><strong>${expedition.edits}</strong><span>次地形改造</span></div><div><strong>${expedition.bites}</strong><span>次水蛇碰面</span></div></div><div class="modal-actions"><button class="primary" data-action="sandbox">继续自由改造</button><button class="secondary" data-action="restart">再试一种水路</button></div>`;
@@ -124,14 +128,14 @@ canvas.addEventListener('pointerleave',()=>{if(!pointer.down)hover=null;});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('keydown',e=>{if(e.code==='Tab'&&(!$('modal').hidden||!$('intro').hidden)){const host=!$('modal').hidden?$('modal'):$('intro');const buttons=Array.from(host.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));const index=buttons.indexOf(document.activeElement as HTMLButtonElement);e.preventDefault();buttons[(index+(e.shiftKey?-1:1)+buttons.length)%buttons.length]?.focus();return;}if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.repeat)return;keys.add(e.code);if(['Digit1','Digit2','Digit3','Digit4'].includes(e.code))selectTool((['rock','soil','dig','remove'] as Tool[])[Number(e.code.slice(-1))-1]);if(e.code==='Escape'){if(modalKind&&modalKind!=='win')closeModal();else if(active())openModal('pause');}if(e.code==='KeyR'&&active())openModal('restart');});
 window.addEventListener('keyup',e=>keys.delete(e.code));
-window.addEventListener('blur',()=>{keys.clear();pointer.down=false;if(active())openModal('pause');});
+window.addEventListener('blur',()=>{keys.clear();resetTouchControls();pointer.down=false;if(active())openModal('pause');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())openModal('pause');});
-document.querySelectorAll<HTMLButtonElement>('[data-move]').forEach(button=>{button.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(button.dataset.move!);button.setPointerCapture(e.pointerId);});for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,()=>keys.delete(button.dataset.move!));});
+bindTouchKeys(document.querySelectorAll<HTMLElement>('[data-move]'),touchKeys,b=>b.dataset.move!,active);
 const forward=new Vector3(),right=new Vector3();
 let previous=performance.now();
 function frame(now:number) {
  const dt=Math.min((now-previous)/1000,.05);previous=now;gameClock+=dt;
- let ix=0,iz=0;if(keys.has('KeyW')||keys.has('ArrowUp'))iz+=1;if(keys.has('KeyS')||keys.has('ArrowDown'))iz-=1;if(keys.has('KeyD')||keys.has('ArrowRight'))ix+=1;if(keys.has('KeyA')||keys.has('ArrowLeft'))ix-=1;
+ let ix=0,iz=0;if(hasKey('KeyW')||hasKey('ArrowUp'))iz+=1;if(hasKey('KeyS')||hasKey('ArrowDown'))iz-=1;if(hasKey('KeyD')||hasKey('ArrowRight'))ix+=1;if(hasKey('KeyA')||hasKey('ArrowLeft'))ix-=1;
  world.camera.getWorldDirection(forward);forward.y=0;forward.normalize();right.setFromMatrixColumn(world.camera.matrixWorld,0);right.y=0;right.normalize();
  const input={x:forward.x*iz+right.x*ix,z:forward.z*iz+right.z*ix};step(dt,input);
  if(pointer.down)interact();
@@ -149,3 +153,6 @@ if(new URLSearchParams(location.search).has('qa')) {
  Object.assign(window,{__riverTest:{sim,expedition,world,snapshot:()=>({phase:expedition.phase,player:{...expedition.player},snakes:expedition.snakes.map(s=>({...s})),levels:sim.basinLevels(),hold:expedition.holdProgress,edits:expedition.edits,bites:expedition.bites,elapsed:expedition.elapsed,revision:sim.revision}),step:(seconds:number)=>{for(let t=0;t<seconds;t+=.05)step(.05,{x:0,z:0});drawHud();},teleport:(x:number,z:number)=>{expedition.player.x=x;expedition.player.z=z;},bite:()=>expedition.bite(),reset,project:(x:number,z:number)=>world.project(x,z)}});
 }
 
+
+$('ui').insertAdjacentHTML('beforeend','<div class="tablet-actions" aria-label="触屏缩放"><button id="zoom-in" aria-label="放大视野">放大 ＋</button><button id="zoom-out" aria-label="缩小视野">缩小 −</button></div>');
+for(const [id,factor] of [['zoom-in',1.15],['zoom-out',1/1.15]] as const)$(id).onclick=()=>{world.camera.zoom=Math.max(.72,Math.min(1.7,world.camera.zoom*factor));world.camera.updateProjectionMatrix();};

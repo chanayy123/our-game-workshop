@@ -13,3 +13,7 @@
 #sand-mask.active{opacity:0}.competition{font-size:10px;color:#e8d69d;border-top:1px solid #d5e6b329;padding-top:10px;margin-top:13px}
 
 .keys{flex-wrap:wrap;justify-content:center;max-width:min(740px,95vw)}#disguise-button.selected{color:#9ee9e2;border-color:#75d5d0}.bottom-controls{width:max-content;max-width:95vw}@media(max-width:760px){.keys{max-width:94vw;gap:3px}.keys button{font-size:8px}.keys kbd{font-size:8px}}
+
+/* Tablet controls are based on input capability, including desktop website mode. */
+body[data-touch-controls=on] .vitals{bottom:250px}body[data-touch-controls=on] .topbar nav button{min-width:44px;min-height:44px}
+body[data-touch-controls=on] :is(#bottom-center,.bottom-center,.bottom-controls){position:fixed;left:auto;right:12px;bottom:70px;transform:none;width:min(210px,calc(100vw - 192px));max-width:210px}body[data-touch-controls=on] .keys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;white-space:normal}body[data-touch-controls=on] .keys>span,body[data-touch-controls=on] .keys kbd{display:none}body[data-touch-controls=on] .keys button{min-height:46px;min-width:0;padding:7px 4px;border:1px solid #d3dfbb80;background:#193e36e8;border-radius:9px;font-size:12px}body[data-touch-controls=on] #context-hint{max-width:210px;white-space:normal;font-size:10px;line-height:1.4}body[data-touch-controls=on] #mouse-hint{display:none!important}
