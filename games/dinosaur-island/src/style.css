@@ -14,5 +14,6 @@
 }
 
 /* Tablet controls are based on input capability, including desktop website mode. */
+body[data-touch-controls=on] #viewport{overflow:hidden}body[data-touch-controls=on] #viewport canvas{max-width:100%;max-height:100%}
 body[data-touch-controls=on] #change-form{min-height:44px;padding:8px 12px}
 body[data-touch-controls=on] .controls{left:auto;right:12px;bottom:70px;display:grid;grid-template-columns:repeat(2,minmax(64px,1fr));gap:6px;max-width:210px}body[data-touch-controls=on] .controls>span,body[data-touch-controls=on] .controls kbd{display:none}body[data-touch-controls=on] .controls button{min-height:46px;padding:8px 10px;background:#193729e8;border:1px solid #e8dcc64d;border-radius:10px;text-align:center}body[data-touch-controls=on] .species{bottom:250px;left:24px}body[data-touch-controls=on] .map-wrap{bottom:235px;right:24px}body[data-touch-controls=on] #hunt-hint{bottom:235px;max-width:70%;white-space:normal;text-align:center}body[data-touch-controls=on] #touch-pad [data-run]{font-size:11px}body[data-touch-controls=on] .icon-button{min-width:44px;min-height:44px}

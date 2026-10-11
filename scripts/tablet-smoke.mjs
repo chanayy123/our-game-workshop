@@ -101,7 +101,11 @@ try{
    const cop=(await page.evaluate(state,game.id)).cops[0];const at=await center(page,selectors[game.id].move);await touch('touchStart',[{id:4,...at}]);await page.waitForFunction(c=>{const p=window.__game.snapshot().cops[0];return Math.hypot(p.x-c.x,p.z-c.z)>.08;},cop,{timeout:15000});await touch('touchEnd',[]);check('midnight-masquerade: police role moves with touch',true);
   }
   await page.screenshot({path:path.join(root,`qa/tablet-${game.id}-landscape.png`),timeout:120000});
-  await page.setViewportSize({width:768,height:1024});await geometry(page,game,'portrait 768x1024');
+  await page.setViewportSize({width:768,height:1024});
+  // resize events can wait for a software-rendered frame; verify the renderer has
+  // adopted portrait dimensions before assessing the resulting layout.
+  await page.waitForFunction(()=>{const c=document.querySelector('canvas');return c&&parseFloat(c.style.width||'0')<=innerWidth+1&&c.getBoundingClientRect().right<=innerWidth+1;},null,{timeout:120000});
+  await geometry(page,game,'portrait 768x1024');
   if(game.id==='midnight-masquerade')check('midnight-masquerade: briefing does not cover playfield',(await page.locator('.brief').boundingBox()).height<90);
   if(game.id==='sandjaw')check('sandjaw: status panel clears movement buttons',await page.evaluate(()=>document.querySelector('.vitals').getBoundingClientRect().bottom<document.querySelector('.touch-move').getBoundingClientRect().top));
   check(`${game.id}: portrait has no horizontal overflow`,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
