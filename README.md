@@ -1,9 +1,17 @@
-# Escape Dinosaur Island
+# Island & Ocean · 游戏试玩合集
 
-Play: https://chanayy123.github.io/escape-dinosaur-island/
+游戏选择入口：[打开试玩合集](https://chanayy123.github.io/escape-dinosaur-island/games/)
 
-This repository contains the compiled browser game and its asset attribution files.
+| Game | Play | Controls |
+| --- | --- | --- |
+| Escape Dinosaur Island · 逃离恐龙岛 | https://chanayy123.github.io/escape-dinosaur-island/ | Keyboard/mouse and tablet touch |
+| Shark Sea Survival · 白鲨海峡 | https://chanayy123.github.io/escape-dinosaur-island/shark-sea-survival/ | Desktop keyboard/mouse |
 
-Tablet: use the direction buttons, run toggle, roar, attack and eat buttons. Desktop: WASD, Shift and the on-screen controls. Initial download is approximately 48 MB.
+This existing repository contains the compiled browser games, preview images, and attribution files. The original dinosaur URL and root assets remain available. Games can be added under separate subdirectories.
 
-Asset licenses and authors: THIRD_PARTY_NOTICES.md and the SOURCE/license files under assets/.
+## Asset attribution
+
+- Dinosaur island: THIRD_PARTY_NOTICES.md and SOURCE/license files under assets/. Initial download approximately 48 MB.
+- Shark sea survival: shark-sea-survival/ASSETS.md and shark-sea-survival/licenses/. Original procedural models, textures, and audio.
+
+Published using GitHub Pages from main, repository root.
