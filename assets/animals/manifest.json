@@ -1,0 +1,41 @@
+{
+  "verifiedAt": "2026-09-27",
+  "items": [
+    {
+      "id": "raptor",
+      "file": "raptor/model.glb",
+      "bytes": 6992080,
+      "sha256": "333e48e57610bb00d7e5a17e2742de100cfacb0faceeccbbd8f0389391b2bcbc",
+      "sourceFile": ".asset-work/raptor/scene.gltf",
+      "sourceSha256": "be399c8d8dca4fc263af3b008cfeaa7786ea7baf5d2bd9c0cffc908bf5092366",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "id": "rhino",
+      "file": "rhino/model.glb",
+      "bytes": 975784,
+      "sha256": "f57fc4dd296125ccd28287cd2b06b986b28132c426eb788a07d01c455cdef597",
+      "sourceFile": ".asset-work/rhino/scene.gltf",
+      "sourceSha256": "2b1b40136ff781ca7c74c3db11c73eb1e46f3cb9011b69e6cdf038d788219328",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "id": "crow",
+      "file": "crow/model.glb",
+      "bytes": 2638712,
+      "sha256": "74d7ea7302272941daef87731a1508c8629a53233a36188d71db699d14425e3b",
+      "sourceFile": ".asset-work/crow/scene.gltf",
+      "sourceSha256": "8b1a60fc05abbe8a3bdc77400629454c6bf60e3c52674399460656381c08451d",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "id": "diplodocus",
+      "file": "diplodocus/model.glb",
+      "bytes": 3123600,
+      "sha256": "87195f06e3a2572f4360237d6d335a019ac7ababbeb7ecdd5bb3324aa187b96c",
+      "sourceFile": ".asset-work/diplodocus/source.zip",
+      "sourceSha256": "3a510c504febd388434e10b9c78380afb3d3fd965c445b2652fdcca85f52cc3b",
+      "license": "CC-BY-SA-3.0"
+    }
+  ]
+}

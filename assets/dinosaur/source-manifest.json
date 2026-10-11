@@ -1,0 +1,58 @@
+{
+  "verifiedAt": "2026-09-26",
+  "title": "Animated Tyrannosaurus Rex Dinosaur Running Loop",
+  "author": "LasquetiSpice (https://sketchfab.com/LasquetiSpice)",
+  "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+  "source": "https://sketchfab.com/3d-models/animated-tyrannosaurus-rex-dinosaur-running-loop-38007d947ae74dea83988cb0b08ee053",
+  "mirror": "https://huggingface.co/datasets/fernandotonon/QtMeshEditor-motion-corpus/tree/main/raw/sketchfab/Animated_Tyrannosaurus_Rex_Dinosaur_Running_Loop_38007d94",
+  "originalAnimations": [
+    "run",
+    "bite",
+    "roar",
+    "attack_tail",
+    "idle"
+  ],
+  "derivedWalk": "The runtime reuses run at reduced playback speed; no separate authored walk clip is present.",
+  "triangles": 11938,
+  "originalFiles": [
+    {
+      "file": "scene.gltf",
+      "bytes": 541149,
+      "sha256": "3BBE509F7BAB3FF156DC1C8FB58226AD5A98413EE90D4180337FFC3F23F3DDC0"
+    },
+    {
+      "file": "scene.bin",
+      "bytes": 2434676,
+      "sha256": "67C57E0330180E761C2E21BAB7192F1567638FC27B9ACBBD05568A7C0F749791"
+    },
+    {
+      "file": "material_0_diffuse.png",
+      "bytes": 5697275,
+      "sha256": "D7B60C97764746E2538471D0963293A2C67D60D4ED90C90D296AD04BC04AE44A"
+    },
+    {
+      "file": "material_0_normal.png",
+      "bytes": 7071225,
+      "sha256": "22592E1752A464B57C065547676E69A264174B165B87FEF019379F3D35D94898"
+    },
+    {
+      "file": "material_0_occlusion.png",
+      "bytes": 767393,
+      "sha256": "D744AAF1C52BA7BF896F17CAFEAF48A1A79332C35DFF92F02AF88E92491279B7"
+    },
+    {
+      "file": "material_0_specularGlossiness.png",
+      "bytes": 1271729,
+      "sha256": "CA8F6D5AC8CAE0FDE0637DF9F59254CB31E8E5658EB788E94E6D89D31FEFB802"
+    }
+  ],
+  "runtimeFile": "trex.glb",
+  "runtimeBytes": 16576264,
+  "runtimeSha256": "F826621636953F76ADA29ED62C7EC5CE5CDB0C2EC6EDCFA4859F6EF544678571",
+  "changes": [
+    "Converted KHR_materials_pbrSpecularGlossiness to modern metallic-roughness PBR using glTF Transform metalrough",
+    "Losslessly resampled redundant animation keyframes",
+    "Embedded geometry, animations and textures in GLB"
+  ],
+  "verification": "Original license.txt and glTF metadata inspected; actual GLB parsed with Three.js and sampled across all five animation clips."
+}

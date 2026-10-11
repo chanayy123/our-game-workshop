@@ -1,0 +1,8 @@
+Diplodocus — Skorpio
+Original source: https://opengameart.org/content/diplodocus
+Original download: https://opengameart.org/sites/default/files/Diplodocus.zip
+License selected from the author's offered alternatives: Creative Commons Attribution-ShareAlike 3.0 Unported.
+License: https://creativecommons.org/licenses/by-sa/3.0/
+Legal code: https://creativecommons.org/licenses/by-sa/3.0/legalcode
+
+Modifications for Escape Dinosaur Island (2026-09-27): smoothed geometry, PBR material conversion, GLB conversion, texture compression, and new simple idle/walk skeletal animations. The derivative model and added animations remain CC BY-SA 3.0. Attribute Skorpio, identify changes, link the license, and distribute further adaptations of this model under the same license.
