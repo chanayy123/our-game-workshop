@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SurvivalSimulation,RULES } from '../src/survival.ts';
 import { terrainHeight,riverCenter,riverDepth,riverSurface } from '../src/terrain.ts';
-import { SPECIES,isPrey } from '../src/species.ts';
+import { SPECIES,isPrey,isHuntable } from '../src/species.ts';
 const pose={x:25,z:134,heading:Math.PI,speed:0};
 function advance(game:SurvivalSimulation,seconds:number,player=pose){for(let time=0;time<seconds-.000001;time+=.05)game.update(.05,player);}
 function preyAt(game:SurvivalSimulation,x:number,z:number){const c=game.creatures.find(c=>c.kind==='fox')!;game.creatures.splice(0,game.creatures.length,c);Object.assign(c,{x,z,active:true,alive:true,mode:'idle',timer:10,fear:0});return c;}
@@ -44,7 +44,7 @@ test('roar frightens nearby prey; prey move and respect the river/ocean boundary
 test('reset starts a fresh population and economy',()=>{
   const game=new SurvivalSimulation();game.dead=true;game.hunger=0;game.health=0;game.kills=4;game.meals=3;game.creatures[0].active=false;game.reset();
   assert.equal(game.hunger,100);assert.equal(game.health,100);assert.equal(game.dead,false);assert.equal(game.kills,0);assert.equal(game.meals,0);
-  assert.equal(new Set(game.creatures.map(c=>c.kind)).size,6);assert.equal(game.creatures.length,17);
+  assert.equal(new Set(game.creatures.map(c=>c.kind)).size,7);assert.equal(game.creatures.length,18);
   assert.equal(game.creatures.filter(c=>SPECIES[c.kind].group==='dinosaur').length,7);assert.equal(game.creatures.filter(c=>isPrey(c)&&c.active&&c.alive).length,8);
 });
 test('raptors flee, can be hunted and eaten; large herbivores are not edible targets',()=>{
@@ -56,9 +56,30 @@ test('raptors flee, can be hunted and eaten; large herbivores are not edible tar
 });
 test('birds follow bounded air routes and all ground species spawn outside obstacles and rivers',()=>{
   const obstacles=[{x:-34,z:82,radius:3},{x:-5,z:108,radius:4}],game=new SurvivalSimulation(obstacles);
-  for(const c of game.creatures.filter(c=>c.kind!=='crow')){assert.ok(terrainHeight(c.x,c.z)>=.3);assert.ok(riverDepth(c.x,c.z)<=.15);assert.ok(obstacles.every(o=>Math.hypot(o.x-c.x,o.z-c.z)>o.radius+SPECIES[c.kind].radius));}
+  for(const c of game.creatures.filter(c=>c.kind!=='crow'&&c.kind!=='pterosaur')){assert.ok(terrainHeight(c.x,c.z)>=.3);assert.ok(riverDepth(c.x,c.z)<=.15);assert.ok(obstacles.every(o=>Math.hypot(o.x-c.x,o.z-c.z)>o.radius+SPECIES[c.kind].radius));}
   const bird=game.creatures.find(c=>c.kind==='crow')!,start={x:bird.x,z:bird.z};advance(game,60);
   assert.ok(Math.hypot(bird.x-start.x,bird.z-start.z)>1);assert.ok(Math.hypot(bird.x-bird.home.x,bird.z-bird.home.z)<=24.01);assert.equal(bird.mode,'run');
+});
+test('one pterosaur circles the coast through ground obstacles, freezes and resets without becoming prey',()=>{
+  const game=new SurvivalSimulation([{x:25,z:112,radius:40}]);
+  const pterosaur=game.creatures.find(c=>c.kind==='pterosaur')!;
+  assert.equal(game.creatures.filter(c=>c.kind==='pterosaur').length,1);
+  assert.equal(isPrey(pterosaur),false);assert.equal(isHuntable(pterosaur),false);
+  const initial={...pterosaur,home:{...pterosaur.home}};
+  for(let i=0;i<600;i++){
+    game.update(.1,pose);
+    assert.ok(Math.abs(pterosaur.x-pterosaur.home.x)<=24);
+    assert.ok(Math.abs(pterosaur.z-pterosaur.home.z)<=18);
+    assert.equal(pterosaur.mode,'run');assert.ok(pterosaur.speed>0);
+  }
+  assert.ok(Math.hypot(pterosaur.x-initial.x,pterosaur.z-initial.z)>1);
+  const frozen={...pterosaur};game.update(0,pose);assert.deepEqual(pterosaur,frozen);
+  // A ground-level bite below the air route must not kill the flying resident.
+  game.creatures.splice(0,game.creatures.length,pterosaur);
+  const below={x:pterosaur.x,z:pterosaur.z,heading:pterosaur.heading,speed:0};
+  game.beginAttack();advance(game,.5,below);assert.equal(pterosaur.alive,true);assert.equal(game.kills,0);
+  pterosaur.alive=false;assert.equal(game.beginEat(below),false);
+  game.reset();assert.deepEqual(game.creatures.find(c=>c.kind==='pterosaur'),initial);
 });
 test('river water follows a carved bed with traversable depth, not a decal on ground',()=>{
   for(const z of [0,45,85,115,140]){const x=riverCenter(z),depth=riverDepth(x,z);assert.ok(depth>1&&depth<1.6);assert.ok(terrainHeight(x,z)<riverSurface(z));assert.equal(riverDepth(x+20,z),0);}

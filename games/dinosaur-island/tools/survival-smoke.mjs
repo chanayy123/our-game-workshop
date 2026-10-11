@@ -12,7 +12,7 @@ async function capture(name){await page.screenshot({path:`qa/v02-${name}.png`});
 try{
   await page.goto('http://127.0.0.1:5182/?qa=1');await page.waitForFunction(()=>window.__islandDebug?.().phase==='intro',null,{timeout:60000});
   await page.locator('#start').click();await page.waitForTimeout(500);
-  const initial=await state();check('6 species and 17 island residents loaded',new Set(initial.survival.creatures.map(c=>c.kind)).size===6&&initial.survival.creatures.length===17);
+  const initial=await state();check('7 species and 18 island residents loaded',new Set(initial.survival.creatures.map(c=>c.kind)).size===7&&initial.survival.creatures.length===18);
   await page.waitForTimeout(6000);const later=await state();check('wildlife move without player input',later.survival.creatures.some((c,i)=>Math.hypot(c.x-initial.survival.creatures[i].x,c.z-initial.survival.creatures[i].z)>1));
   await seed('hunt');await page.keyboard.press('Space');await page.waitForFunction(()=>window.__islandDebug().survival.kills===1,null,{timeout:3000});await page.waitForTimeout(1300);
   check('Space kills a nearby fleeing animal',(await state()).survival.kills===1);await capture('hunt');

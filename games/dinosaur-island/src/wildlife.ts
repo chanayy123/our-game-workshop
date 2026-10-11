@@ -7,15 +7,20 @@ import { terrainHeight } from './terrain';
 import { type SurvivalSimulation } from './survival';
 import { createAnimal, type AnimalVisual } from './animals';
 import { isHuntable } from './species';
+import { createPterosaur } from './pterosaur';
 
 export class Wildlife {
-  private visuals=new Map<string,{root:THREE.Group;dinosaur?:Dinosaur;animal?:AnimalVisual;mixer?:THREE.AnimationMixer;actions?:Map<string,THREE.AnimationAction>;current?:string;body?:THREE.Group;marker?:THREE.Mesh}>();
-  diagnostics(){return [...this.visuals].map(([id,v])=>({id,clips:v.animal?.clips??v.dinosaur?.clips??['Survey','Walk','Run'],animation:v.dinosaur?.getCurrentAction()??v.animal?.currentAction()??v.current,visible:v.root.visible,position:v.root.position.toArray()}));}
+  private visuals=new Map<string,{root:THREE.Group;dinosaur?:Dinosaur;animal?:AnimalVisual;pterosaur?:ReturnType<typeof createPterosaur>;mixer?:THREE.AnimationMixer;actions?:Map<string,THREE.AnimationAction>;current?:string;body?:THREE.Group;marker?:THREE.Mesh}>();
+  diagnostics(){return [...this.visuals].map(([id,v])=>({id,clips:v.pterosaur?.clips??v.animal?.clips??v.dinosaur?.clips??['Survey','Walk','Run'],animation:v.pterosaur?.currentAction()??v.dinosaur?.getCurrentAction()??v.animal?.currentAction()??v.current,visible:v.root.visible,position:v.root.position.toArray(),...(v.pterosaur?{wingAngles:['left-wing','right-wing'].map(name=>v.root.getObjectByName(name)!.rotation.z)}:{})}));}
   async init(scene:THREE.Scene,simulation:SurvivalSimulation){
     const fox=await new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}assets/wildlife/fox.glb`);
     fox.scene.traverse(o=>{if(o instanceof THREE.Mesh){const geometry=o.geometry.clone();geometry.deleteAttribute('normal');o.geometry=mergeVertices(geometry);o.geometry.computeVertexNormals();const materials=Array.isArray(o.material)?o.material:[o.material];for(const m of materials)if(m instanceof THREE.MeshStandardMaterial){m.color.multiply(new THREE.Color(0xb9a28a));m.roughness=1;}}});
     const markerGeo=new THREE.OctahedronGeometry(.18),markerMat=new THREE.MeshBasicMaterial({color:0xf1ce85});
     for(const c of simulation.creatures){
+      if(c.kind==='pterosaur'){
+        const pterosaur=createPterosaur(c.size);scene.add(pterosaur.root);
+        this.visuals.set(c.id,{root:pterosaur.root,pterosaur});continue;
+      }
       if(c.kind==='dinosaur'){
         const d=await createDinosaur({length:c.size,terrain:terrainHeight});const marker=new THREE.Mesh(markerGeo,markerMat);marker.position.y=3;marker.visible=false;d.root.add(marker);scene.add(d.root);this.visuals.set(c.id,{root:d.root,dinosaur:d,marker});continue;
       }
@@ -44,6 +49,10 @@ export class Wildlife {
       v.root.position.set(c.x,terrainHeight(c.x,c.z),c.z);
       const turn=Math.atan2(Math.sin(c.heading-v.root.rotation.y),Math.cos(c.heading-v.root.rotation.y));
       v.root.rotation.y+=turn*(dt===0?1:1-Math.exp(-dt*(c.kind==='diplodocus'?1.1:4)));
+      if(v.pterosaur){
+        v.root.position.y=Math.max(terrainHeight(c.x,c.z),terrainHeight(c.home.x,c.home.z))+16+Math.sin(simulation.elapsed*.9)*.7;
+        v.pterosaur.update(simulation.elapsed);continue;
+      }
       if(c.kind==='crow')v.root.position.y=Math.max(terrainHeight(c.x,c.z),terrainHeight(c.home.x,c.home.z))+11+Math.sin(time*.6+Number(c.id.slice(-1)))*1.4;
       if(v.dinosaur){v.dinosaur.update(dt,{action:c.mode,speed:c.speed});v.marker!.visible=!c.alive;v.marker!.rotation.y=time;continue;}
       if(v.animal){v.animal.update(dt,c);v.marker!.visible=isHuntable(c)&&!c.alive;v.marker!.rotation.y=time;continue;}

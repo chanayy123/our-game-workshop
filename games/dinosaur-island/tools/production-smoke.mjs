@@ -18,7 +18,7 @@ try{
   await page.locator('#settings').click();await page.locator('#reset').click();
   await page.waitForTimeout(500);
   report.state=await page.evaluate(()=>window.__islandDebug());
-  assert.equal(report.state.phase,'playing');assert.equal(report.state.playerKind,'raptor');assert.equal(report.state.survival.creatures.length,17);
+  assert.equal(report.state.phase,'playing');assert.equal(report.state.playerKind,'raptor');assert.equal(report.state.survival.creatures.length,18);
   assert.ok(await page.locator('#intro').isHidden());assert.ok(report.state.pose.rigReady);
   await page.keyboard.down('Shift');await page.keyboard.down('w');await page.keyboard.down('a');
   await page.waitForTimeout(8000);

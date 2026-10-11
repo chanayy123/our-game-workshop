@@ -37,10 +37,12 @@ export class SurvivalSimulation {
     [[-5,108],[-12,48]].forEach(([x,z],i)=>this.add(`rhino-${i}`,'rhino',x,z,3.9));
     [[-34,82],[-57,27]].forEach(([x,z],i)=>this.add(`diplodocus-${i}`,'diplodocus',x,z,17+i*2));
     [[20,120],[-25,77],[58,55],[-44,-10]].forEach(([x,z],i)=>this.add(`crow-${i}`,'crow',x,z,1.2));
+    this.add('pterosaur-0','pterosaur',25,112,6.5);
+    this.moveCreature(this.creatures[this.creatures.length-1],0,{x:25,z:137});
   }
   private add(id:string,kind:Creature['kind'],x:number,z:number,size:number){
     // Place every creature on open ground, independently of scenery generation order.
-    let p={x,z};for(let i=0;i<80&&!this.walkable(p,kind);i++)p={x:x+Math.cos(i*2.4)*(2+i*.2),z:z+Math.sin(i*2.4)*(2+i*.2)};
+    let p={x,z};for(let i=0;kind!=='pterosaur'&&i<80&&!this.walkable(p,kind);i++)p={x:x+Math.cos(i*2.4)*(2+i*.2),z:z+Math.sin(i*2.4)*(2+i*.2)};
     const health=kind==='dinosaur'?COMBAT.rexHealth:30;
     this.creatures.push({id,kind,...p,home:{...p},heading:this.random()*Math.PI*2,alive:true,active:true,mode:'idle',speed:0,timer:2+this.random()*3,fear:0,corpseAge:0,size,health,maxHealth:health,portions:kind==='dinosaur'?COMBAT.rexPortions:1,aggro:0,windup:0,attackCooldown:0});
   }
@@ -108,6 +110,12 @@ export class SurvivalSimulation {
     return !this.obstacles.some(o=>o.active!==false&&distance(p,o)<o.radius+radius);
   }
   private moveCreature(c:Creature,dt:number,player:Point){
+    if(c.kind==='pterosaur'){
+      const angle=this.elapsed*.15-Math.PI/2;
+      c.x=c.home.x+Math.cos(angle)*24;c.z=c.home.z+Math.sin(angle)*18;
+      c.heading=Math.atan2(-Math.sin(angle)*24,Math.cos(angle)*18);
+      c.mode='run';c.speed=.15*Math.hypot(Math.sin(angle)*24,Math.cos(angle)*18);return;
+    }
     if(c.kind==='crow'){
       const angle=this.elapsed*.17+Number(c.id.split('-')[1])*1.5;
       c.x=c.home.x+Math.cos(angle)*17;c.z=c.home.z+Math.sin(angle)*24;
