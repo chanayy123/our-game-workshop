@@ -14,4 +14,6 @@
 
 这次是仓库整理与发布流程验证，不是全部关卡、胜负分支或真实平板 GPU/触屏验收。已有触屏代码的游戏在合集标注，躲猫猫和白鲨仍推荐电脑键鼠。
 
-最终线上发布和云端环境状态在执行完成后记录；不能仅凭本说明宣称云端环境已创建。
+GitHub 首轮自动发布成功：[Actions 38110202291](https://github.com/chanayy123/our-game-workshop/actions/runs/38110202291)。真实线上地址再次通过 27/27 浏览器检查，页面与资源错误 0，报告 qa/site-live.json；[游戏合集](https://chanayy123.github.io/our-game-workshop/games/) 可公开访问。
+
+账号内真实 Codex 云环境“我们的游戏工坊”已正式发布，页面显示“环境已发布”和“已发布”。设置实例已完成依赖安装、176 项规则测试、六款类型检查/生产构建和 27 项浏览器检查。安装脚本和启动说明已保存，浏览器采用云实例自带 Chromium；没有配置 API 密钥，也没有为环境测试改写游戏源码。发布截图保存在本地 qa/cloud-environment-published.jpg。
