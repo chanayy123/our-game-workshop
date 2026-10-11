@@ -12,7 +12,7 @@ const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.
 const base=process.env.WORKSHOP_URL??`http://127.0.0.1:${server.address().port}${prefix}`;
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
 const report={date:new Date().toISOString(),base,checks:[],errors:[],samples:[],note:'Production builds; normal URLs; real start and keyboard input; no writable QA hooks used. Headless rendering does not prove real tablet performance or all game outcomes.'};
-const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']})});
+const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{channel:'chromium',args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']})});
 const check=(name,value)=>{assert.ok(value,name);report.checks.push(name);console.log(`PASS ${name}`);};
 function errors(page,game){
   page.on('pageerror',e=>report.errors.push({game,error:e.message}));
@@ -38,6 +38,9 @@ try{
   await page.screenshot({path:path.join(root,'qa/gallery-mobile.png'),fullPage:true});await page.close();
   for(const game of selected){
     const page=await browser.newPage({viewport:{width:960,height:600}});errors(page,game.id);
+    // Software WebGL can stall the first UI frames before balanced quality is selected.
+    // Keep actionability checks and real input, but allow the slow CI renderer to settle.
+    page.setDefaultTimeout(120000);
     await page.goto(new URL(game.path||'./',base).href,{waitUntil:'domcontentloaded',timeout:120000});
     await page.waitForFunction(()=>{const start=document.querySelector('#start');return start&&!start.disabled&&document.querySelector('canvas');},null,{timeout:120000});
     check(`${game.id}: canvas and start ready`,await page.locator('canvas').count()>0);

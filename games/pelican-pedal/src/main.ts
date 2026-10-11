@@ -1,3 +1,4 @@
+import { installTouchControls, bindHold, registerTouchReset } from '../../../shared/touch';
 import '@fontsource/dm-sans/latin-400.css';
 import '@fontsource/dm-sans/latin-500.css';
 import '@fontsource/dm-sans/latin-600.css';
@@ -147,7 +148,7 @@ function updateUi(force = false) {
   document.body.classList.toggle('boosting', ongoingBoost); $('#boost-fill').style.width = `${s.boostCharge}%`;
   $('#boost-percent').textContent = ongoingBoost ? `${s.boostRemaining.toFixed(1)}s` : `${Math.floor(s.boostCharge)}%`;
   $('#boost-label').textContent = ongoingBoost ? s.phase === 'paused' ? 'Tailwind paused' : 'Riding the tailwind' : s.boostCharge >= 100 ? 'Let it fly!' : 'Collect fish to charge';
-  buttons.boost.disabled = s.phase !== 'running' || s.boostCharge < 100 || s.boostRemaining > 0; buttons.boost.classList.toggle('charged', s.boostCharge >= 100);
+  buttons.boost.disabled = s.phase !== 'running' || s.boostCharge < 100 || s.boostRemaining > 0; buttons.boost.classList.toggle('charged', s.boostCharge >= 100);document.getElementById('touch-boost')?.toggleAttribute('disabled',buttons.boost.disabled);
   for (const id of ['left','right','jump']) buttons[id].disabled = s.phase !== 'running' || countdown > 0;
   buttons.jump.classList.toggle('recharging', s.jumpCooldown > .15);
   buttons.pause.disabled = !['running','paused'].includes(s.phase);
@@ -266,3 +267,8 @@ if (new URLSearchParams(location.search).has('qa')) {
     snapshot: () => ({ ...structuredClone(game.state), countdown, best, bestTime, render: ride?.diagnostics() }),
   }), configurable: true });
 }
+
+// Keep the ride controls inside the touch viewport, including fullscreen.
+installTouchControls();registerTouchReset(clearHeldControls);
+const touchRide=document.createElement('div');touchRide.className='tablet-actions pelican-touch';touchRide.setAttribute('aria-label','触屏骑行');touchRide.innerHTML='<button id="touch-left" aria-label="向左换道">← 左</button><button id="touch-right" aria-label="向右换道">右 →</button><button id="touch-jump">跳跃</button><button id="touch-boost">加速</button><button id="touch-brake">刹车</button>';document.body.append(touchRide);document.addEventListener('fullscreenchange',()=>{(document.fullscreenElement??document.body).append(touchRide);});
+$('#touch-left').onclick=()=>buttons.left.click();$('#touch-right').onclick=()=>buttons.right.click();$('#touch-jump').onclick=()=>buttons.jump.click();$('#touch-boost').onclick=()=>buttons.boost.click();bindHold($('#touch-brake'),down=>{game.setBraking(down);updateUi(true);},()=>game.state.phase==='running'&&!countdown);

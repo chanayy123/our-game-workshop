@@ -1,3 +1,4 @@
+import { installTouchControls, bindTouchKeys, bindHold, resetTouchControls, registerTouchReset } from '../../../shared/touch';
 import * as THREE from 'three';
 import { Game, MAX_DEPTH, MAX_SPEED } from './game.ts';
 import { OceanWorld } from './ocean.ts';
@@ -60,7 +61,7 @@ let splashShake=0,threat=0,ambientTime=0,lastMode=game.mode,lastPhase=game.phase
 let viewYaw=0,viewPitch=.2,helmFirstPerson=false,drag=false,lastMouseX=0,lastMouseY=0,muted=false,guideOpen=false,returnToIntro=false;
 let nearest=999,lastHUD=0,frameCount=0,frameSum=0,fps=60;
 let navIsland=false;
-const keys=new Set<string>();
+const keys=new Set<string>();const touchKeys=new Set<string>();const hasKey=(key:string)=>keys.has(key)||touchKeys.has(key);installTouchControls();
 const projectiles:{mesh:THREE.Mesh,velocity:THREE.Vector3,life:number}[]=[];
 const spearGeo=new THREE.CylinderGeometry(.012,.016,1.7,5);spearGeo.rotateX(Math.PI/2);
 const spearMat=new THREE.MeshStandardMaterial({color:0xb0c4c2,metalness:.9,roughness:.3});
@@ -75,7 +76,7 @@ function sharkEvent(event:SharkEvent){
 const sharks=new SharkSystem(scene,sharkEvent);
 
 function reset(){
-  game.start();sharks.reset();ocean.reset();keys.clear();viewYaw=0;viewPitch=.2;helmFirstPerson=false;
+  game.start();sharks.reset();ocean.reset();keys.clear();resetTouchControls();viewYaw=0;viewPitch=.2;helmFirstPerson=false;
   lastMode='helm';lastPhase='playing';guideOpen=false;returnToIntro=false;threat=0;splashShake=0;transition=1;navIsland=false;
   for(const p of projectiles)scene.remove(p.mesh);projectiles.length=0;
   el('intro').hidden=true;el('modal').hidden=true;el('hud').hidden=false;
@@ -129,10 +130,10 @@ function showModal(help=false){
   el('modal-stats').innerHTML=win||lost?`<div><b>${formatTime(game.elapsed)}</b><span>航程时间</span></div><div><b>${Math.round(game.stats.maxDepth)} <small>m</small></b><span>最深下潜</span></div><div><b>${game.stats.hits}</b><span>有效命中</span></div><div><b>${game.stats.breaches}</b><span>跃水目击</span></div>`:'';
   el('resume').hidden=win||lost;el('restart').textContent=win||lost?'再次启航':'重新启航';
   if(win||lost)el('restart').classList.add('primary');else el('restart').classList.remove('primary');
-  if(document.pointerLockElement)document.exitPointerLock();keys.clear();drag=false;
+  if(document.pointerLockElement)document.exitPointerLock();keys.clear();resetTouchControls();drag=false;
 }
 function pause(help=false){if(game.phase==='ready'){returnToIntro=true;game.phase='paused';showModal(true);el('resume').textContent='返回主菜单';return;}if(game.phase==='playing')game.pause();if(game.phase==='paused')showModal(help);}
-function resume(){if(game.phase==='paused'){el('modal').hidden=true;keys.clear();if(returnToIntro){game.phase='ready';returnToIntro=false;el('intro').hidden=false;el('hud').hidden=true;el('resume').innerHTML='继续航程 <span>→</span>';return;}game.phase='playing';el('hud').hidden=false;guideOpen=false;renderer.domElement.focus({preventScroll:true});void audio.start();}}
+function resume(){if(game.phase==='paused'){el('modal').hidden=true;keys.clear();resetTouchControls();if(returnToIntro){game.phase='ready';returnToIntro=false;el('intro').hidden=false;el('hud').hidden=true;el('resume').innerHTML='继续航程 <span>→</span>';return;}game.phase='playing';el('hud').hidden=false;guideOpen=false;renderer.domElement.focus({preventScroll:true});void audio.start();}}
 el('start').addEventListener('click',reset);el('restart').addEventListener('click',reset);el('resume').addEventListener('click',resume);
 el('interact').addEventListener('click',()=>{interact();renderer.domElement.focus({preventScroll:true});});
 el('dock').addEventListener('click',()=>{dock();renderer.domElement.focus({preventScroll:true});});
@@ -150,15 +151,15 @@ window.addEventListener('keydown',e=>{
   if(k==='v'&&game.mode==='helm'){helmFirstPerson=!helmFirstPerson;viewYaw=0;viewPitch=helmFirstPerson?.02:.2;transition=.8;}
 });
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur',()=>{keys.clear();drag=false;if(game.phase==='playing'&&!new URLSearchParams(location.search).has('qa'))pause();});
+window.addEventListener('blur',()=>{keys.clear();resetTouchControls();drag=false;if(game.phase==='playing'&&!new URLSearchParams(location.search).has('qa'))pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.phase==='playing')pause();});
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 renderer.domElement.addEventListener('pointerdown',e=>{
   if(game.phase!=='playing')return;renderer.domElement.focus({preventScroll:true});
-  if(e.button===0&&(game.mode==='cage'||game.mode==='shore')){fire();return;}
+  if(e.pointerType!=='touch'&&e.button===0&&(game.mode==='cage'||game.mode==='shore')){fire();return;}
   if(e.button===2||e.button===0){drag=true;lastMouseX=e.clientX;lastMouseY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);}
 });
-renderer.domElement.addEventListener('pointerup',()=>drag=false);
+for(const type of ['pointerup','pointercancel','lostpointercapture'])renderer.domElement.addEventListener(type,()=>drag=false);registerTouchReset(()=>drag=false);
 renderer.domElement.addEventListener('pointermove',e=>{
   if(!drag||game.phase!=='playing')return;const dx=e.clientX-lastMouseX,dy=e.clientY-lastMouseY;lastMouseX=e.clientX;lastMouseY=e.clientY;
   viewYaw-=dx*.004;viewPitch=Math.max(-1.48,Math.min(1.48,viewPitch-dy*.003));
@@ -167,6 +168,11 @@ window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camer
 
 function formatTime(t:number){return `${Math.floor(t/60).toString().padStart(2,'0')}:${Math.floor(t%60).toString().padStart(2,'0')}`;}
 function updateHUD(){
+  const repair=document.getElementById('touch-repair') as HTMLButtonElement|null;if(repair){repair.disabled=game.mode==='helm'||game.mode==='dragged';repair.textContent=game.mode==='cage'?'装填':'按住维修';}
+  const attack=document.getElementById('touch-fire') as HTMLButtonElement|null;if(attack){attack.disabled=game.mode!=='cage'&&game.mode!=='shore';attack.textContent=game.mode==='shore'?'砍树':'攻击';}
+  const weapon=document.getElementById('touch-weapon');if(weapon)weapon.hidden=game.mode!=='cage';const view=document.getElementById('touch-view');if(view)view.hidden=game.mode!=='helm';
+  for(const [key,label] of [['w',game.mode==='cage'?'下潜':'前进'],['s',game.mode==='cage'?'上浮':'后退']] as const){const button=document.querySelector<HTMLElement>('.sea-pad [data-touch-key="'+key+'"]');if(button)button.textContent=label;}
+
   const cage=game.mode==='cage',deck=game.mode==='deck',ashore=game.mode==='shore',dragged=game.mode==='dragged';
   el('hud').hidden=game.phase==='ready';el('brand').classList.toggle('playing',game.phase!=='ready');
   el('distance').textContent=game.remaining>999?`${(game.remaining/1000).toFixed(2)} km`:`${Math.round(game.remaining)} m`;
@@ -217,10 +223,10 @@ function updateHUD(){
 function step(dt:number){
   const playing=game.phase==='playing';
   if(playing){
-    if(keys.has('arrowleft'))viewYaw+=dt*1.1;if(keys.has('arrowright'))viewYaw-=dt*1.1;
-    if(keys.has('arrowup'))viewPitch=Math.min(1.48,viewPitch+dt*.8);if(keys.has('arrowdown'))viewPitch=Math.max(-1.48,viewPitch-dt*.8);
+    if(hasKey('arrowleft'))viewYaw+=dt*1.1;if(hasKey('arrowright'))viewYaw-=dt*1.1;
+    if(hasKey('arrowup'))viewPitch=Math.min(1.48,viewPitch+dt*.8);if(hasKey('arrowdown'))viewPitch=Math.max(-1.48,viewPitch-dt*.8);
     const priorRepairs=game.repairs;
-    game.step(dt,{forward:(keys.has('w')?1:0)-(keys.has('s')?1:0),turn:(keys.has('a')?1:0)-(keys.has('d')?1:0),brake:keys.has(' '),moveX:(keys.has('a')?1:0)-(keys.has('d')?1:0),moveZ:(keys.has('w')?1:0)-(keys.has('s')?1:0),lookYaw:viewYaw,dive:((keys.has('w')||keys.has('shift'))?1:0)-((keys.has('s')||keys.has(' '))?1:0),repair:keys.has('r')});
+    game.step(dt,{forward:(hasKey('w')?1:0)-(hasKey('s')?1:0),turn:(hasKey('a')?1:0)-(hasKey('d')?1:0),brake:hasKey(' '),moveX:(hasKey('a')?1:0)-(hasKey('d')?1:0),moveZ:(hasKey('w')?1:0)-(hasKey('s')?1:0),lookYaw:viewYaw,dive:((hasKey('w')||hasKey('shift'))?1:0)-((hasKey('s')||hasKey(' '))?1:0),repair:hasKey('r')});
     if(game.repairs>priorRepairs)audio.play('repair');
   }
   if(game.phase==='ready')ambientTime+=dt;
@@ -291,7 +297,12 @@ function animate(now:number){
 requestAnimationFrame(animate);
 
 const qa=new URLSearchParams(location.search).get('qa')==='1';
-const inspection={snapshot:()=>({...game.snapshot(),fps,nearest,camera:camera.position.toArray(),sharks:sharks.sharks.map(s=>({id:s.id,position:s.position.toArray(),health:s.health,state:s.state,length:s.length})),render:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}})};
+const inspection={snapshot:()=>({...game.snapshot(),fps,nearest,camera:camera.position.toArray(),view:camera.quaternion.toArray(),sharks:sharks.sharks.map(s=>({id:s.id,position:s.position.toArray(),health:s.health,state:s.state,length:s.length})),render:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}})};
 Object.assign(window,{__sea:qa?{...inspection,game,sharks,step:(seconds:number)=>{for(let t=0;t<seconds;t+=1/60)step(1/60);renderer.render(scene,camera);updateHUD();},setBoat:(x:number,z:number)=>{game.x=x;game.z=z;},aimAt:(id:number)=>{const shark=sharks.sharks.find(s=>s.id===id);if(shark){temp.copy(shark.position).sub(camera.position);viewYaw=Math.atan2(temp.x,temp.z);viewPitch=Math.atan2(temp.y,Math.hypot(temp.x,temp.z));}},setView:(yaw:number,pitch:number)=>{viewYaw=yaw;viewPitch=pitch;},project:(x:number,y:number,z:number)=>{temp.set(x,y,z).project(camera);return {x:(temp.x*.5+.5)*innerWidth,y:(-.5*temp.y+.5)*innerHeight};}}:inspection});
 window.addEventListener('error',()=>{el('loading').textContent='海域载入遇到问题，请刷新页面重试。';});
 
+
+el('hud').insertAdjacentHTML('beforeend','<div class="touch-pad sea-pad" aria-label="触屏航行"><button data-touch-key="w" aria-label="前进或下潜">↑</button><button data-touch-key="a" aria-label="左转或左移">←</button><button data-touch-key="s" aria-label="后退或上浮">↓</button><button data-touch-key="d" aria-label="右转或右移">→</button><button data-touch-key=" " class="sea-stop" aria-label="按住停船或上浮">停船</button></div><div class="tablet-actions sea-actions" aria-label="触屏动作"><button id="touch-fire">攻击</button><button id="touch-repair" data-touch-key="r">维修 / 装填</button><button id="touch-weapon">换武器</button><button id="touch-view">换视角</button></div>');
+bindTouchKeys(document.querySelectorAll<HTMLElement>('[data-touch-key]'),touchKeys,b=>b.dataset.touchKey!,()=>game.phase==='playing');
+el('touch-fire').onclick=()=>{if(game.phase==='playing')fire();};bindHold(el('touch-repair'),down=>{if(down&&game.mode==='cage')game.reloadWeapon();},()=>game.phase==='playing');
+el('touch-weapon').onclick=()=>{if(game.phase==='playing')game.weapon=game.weapon==='speargun'?'knife':'speargun';};el('touch-view').onclick=()=>{if(game.phase==='playing'&&game.mode==='helm'){helmFirstPerson=!helmFirstPerson;viewYaw=0;viewPitch=helmFirstPerson?.02:.2;transition=.8;}};

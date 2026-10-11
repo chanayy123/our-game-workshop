@@ -23,11 +23,14 @@ npm run setup
 npm test -- shark-sea-survival
 npm run build
 npm run test:site -- shark-sea-survival
+npm run test:tablet -- shark-sea-survival
 npm run dev -- shark-sea-survival
 ```
 Replace the slug for the requested game. Each game retains its own package.json and lockfile. `npm test` runs all rule suites; `npm run build` builds all six with relative resource URLs and assembles `.site`. After an initial all-game build, `npm run build -- <slug>` refreshes that game and reassembles the site using the other existing builds. If a test reports no browser installation, run `npx playwright install --with-deps chromium` (in a restricted environment, use `npx playwright install chromium` and report missing OS libraries). Do not replace actual browser checks with a build-only claim.
 
 The root `scripts/site-smoke.mjs` checks the assembled production site using real input. Game-specific tools/tests are also retained under each game. Use relevant deeper tests when a behavior change requires them. QA helpers are not proof of real touch/GPU/device acceptance; report coverage honestly. `qa/`, `.site/`, `dist/`, and `node_modules/` are generated and untracked. Never commit credentials or browser profiles.
+
+`shared/touch.ts` and `shared/touch.css` provide capability detection, manual display, pointer holds and reset behavior. A change there affects all six games: build all games and run both root browser suites. `scripts/tablet-smoke.mjs` uses real touch events with read-only state checks for landscape/portrait controls and main actions. Never hide tablet controls based only on narrow phone width; keep keyboard and touch hold state independent.
 
 ## Publication
 

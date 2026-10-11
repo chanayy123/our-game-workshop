@@ -1,3 +1,4 @@
+import { installTouchControls, bindTouchKeys, resetTouchControls, registerTouchReset, isTouchControlsEnabled } from '../../../shared/touch';
 import './style.css';
 import {Game,HOME,ANCIENT,beach,dist,MAX_LENGTH,GROWTH_TO_MAX,TRIAL_LENGTH} from './game';
 import {World} from './world';
@@ -27,15 +28,15 @@ const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(
 let game=new Game();let world:World;
 try{world=new World($<HTMLCanvasElement>('world'));}catch(e){$('intro').innerHTML='<div class="modal-card"><h2>无法启动三维画面</h2><p>请使用支持 WebGL 的浏览器，并开启硬件加速后重新加载。</p></div>';throw e;}
 game.obstacles=world.obstacles;
-const sound=new Sound();const keys=new Set<string>();let guideOpen=false;let previousPhase:Game['phase']='ready';let modalPhase='';
+const sound=new Sound();const keys=new Set<string>();const touchKeys=new Set<string>();const hasKey=(key:string)=>keys.has(key)||touchKeys.has(key);installTouchControls();let guideOpen=false;let previousPhase:Game['phase']='ready';let modalPhase='';
 const canvas=$<HTMLCanvasElement>('world');let locked=false,mouseBite=false,dragging=false,sensitivity=.0022,unlockAt=-1000;let pointerMode='键盘 / 拖动';
-const release=()=>{keys.clear();mouseBite=false;dragging=false;if(document.pointerLockElement)document.exitPointerLock();};
-function capture(){if(game.phase!=='playing'||matchMedia('(pointer: coarse)').matches)return;try{Promise.resolve(canvas.requestPointerLock()).catch(()=>{pointerMode='拖动环顾';});}catch{pointerMode='拖动环顾';}}
+const release=()=>{keys.clear();resetTouchControls();mouseBite=false;dragging=false;if(document.pointerLockElement)document.exitPointerLock();};
+function capture(){if(game.phase!=='playing'||isTouchControlsEnabled())return;try{Promise.resolve(canvas.requestPointerLock()).catch(()=>{pointerMode='拖动环顾';});}catch{pointerMode='拖动环顾';}}
 const map=$<HTMLCanvasElement>('minimap').getContext('2d')!;
-function start(){game.start();keys.clear();sound.init();guideOpen=false;renderUI();capture();}
+function start(){game.start();keys.clear();resetTouchControls();sound.init();guideOpen=false;renderUI();capture();}
 function restart(){game=new Game();game.obstacles=world.obstacles;world.reset();start();}
 function help(){if(guideOpen){resume();return;}if(game.phase==='won'||game.phase==='lost')return;previousPhase=game.phase==='paused'?'playing':game.phase;if(game.phase==='playing')game.phase='paused';guideOpen=true;release();renderUI();}
-function resume(){if(game.phase==='won')game.continueExploring();else if(guideOpen){game.phase=previousPhase;guideOpen=false;}else if(game.phase==='paused')game.phase='playing';keys.clear();renderUI();if(game.phase==='playing')capture();}
+function resume(){if(game.phase==='won')game.continueExploring();else if(guideOpen){game.phase=previousPhase;guideOpen=false;}else if(game.phase==='paused')game.phase='playing';keys.clear();resetTouchControls();renderUI();if(game.phase==='playing')capture();}
 function pause(){if(guideOpen)resume();else if(game.phase==='playing'){game.phase='paused';release();renderUI();}else if(game.phase==='paused')resume();}
 function mute(){const muted=sound.mute();$('sound').textContent=muted?'♪':'♫';$('sound').classList.toggle('muted',muted);$('sound').setAttribute('aria-label',muted?'开启声音':'关闭声音');}
 $('start').onclick=start;$('restart').onclick=restart;$('resume').onclick=resume;$('help').onclick=help;$('pause').onclick=pause;$('sound').onclick=mute;
@@ -45,17 +46,18 @@ window.addEventListener('keydown',e=>{
   const key=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(key))e.preventDefault();keys.add(key);if(e.repeat)return;
   if(key==='r')game.disguise();if(key==='f')game.drag('water');if(key==='g')game.drag('sand');if(key==='e')game.bury();if(key==='q')game.dive();if(key===' ')game.bite();if(key==='escape'&&performance.now()-unlockAt>250)pause();if(key==='h')help();if(key==='m')mute();
 });window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur',()=>{keys.clear();mouseBite=false;dragging=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.phase==='playing'){game.phase='paused';release();renderUI();}});
-document.addEventListener('pointerlockchange',()=>{const before=locked;locked=document.pointerLockElement===canvas;pointerMode=locked?'鼠标锁定':'键盘 / 拖动';if(before&&!locked){unlockAt=performance.now();if(game.phase==='playing'){game.phase='paused';keys.clear();mouseBite=false;renderUI();}}});
+window.addEventListener('blur',()=>{keys.clear();resetTouchControls();mouseBite=false;dragging=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.phase==='playing'){game.phase='paused';release();renderUI();}});
+document.addEventListener('pointerlockchange',()=>{const before=locked;locked=document.pointerLockElement===canvas;pointerMode=locked?'鼠标锁定':'键盘 / 拖动';if(before&&!locked){unlockAt=performance.now();if(game.phase==='playing'){game.phase='paused';keys.clear();resetTouchControls();mouseBite=false;renderUI();}}});
 function look(dx:number,dy:number){if(game.phase!=='playing')return;const view=turnView(game.heading,world.pitch,dx,dy,sensitivity);game.heading=view.heading;world.pitch=view.pitch;}
 window.addEventListener('mousemove',e=>{if(locked||dragging)look(e.movementX,e.movementY);});
 canvas.addEventListener('mousedown',e=>{if(game.phase!=='playing')return;if(e.button===2){dragging=true;pointerMode='拖动环顾';e.preventDefault();}else if(e.button===0){if(locked){mouseBite=true;game.bite();}else capture();}});
 window.addEventListener('mouseup',e=>{if(e.button===0)mouseBite=false;if(e.button===2)dragging=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());
-let touchX=0,touchY=0;canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){canvas.setPointerCapture(e.pointerId);touchX=e.clientX;touchY=e.clientY;}});canvas.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&e.buttons){look((e.clientX-touchX)*1.7,(e.clientY-touchY)*1.7);touchX=e.clientX;touchY=e.clientY;}});
+let touchX=0,touchY=0,lookPointer:number|null=null;canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&game.phase==='playing'&&lookPointer===null){lookPointer=e.pointerId;canvas.setPointerCapture(e.pointerId);touchX=e.clientX;touchY=e.clientY;}});canvas.addEventListener('pointermove',e=>{if(e.pointerId===lookPointer){look((e.clientX-touchX)*1.7,(e.clientY-touchY)*1.7);touchX=e.clientX;touchY=e.clientY;}});for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if((e as PointerEvent).pointerId===lookPointer)lookPointer=null;});registerTouchReset(()=>lookPointer=null);
 $<HTMLInputElement>('fov').oninput=e=>{world.fov=Number((e.target as HTMLInputElement).value);$('fov-value').textContent=world.fov+'°';};
 $<HTMLInputElement>('sensitivity').oninput=e=>sensitivity=Number((e.target as HTMLInputElement).value)/10000;
 $<HTMLInputElement>('comfort').checked=world.comfortable;$<HTMLInputElement>('comfort').onchange=e=>world.comfortable=(e.target as HTMLInputElement).checked;
-document.querySelectorAll<HTMLButtonElement>('[data-move]').forEach(b=>{b.onpointerdown=e=>{b.setPointerCapture(e.pointerId);keys.add(b.dataset.move!);};b.onpointerup=b.onpointercancel=()=>keys.delete(b.dataset.move!);});
+$('bite-button').dataset.touchKey=' ';document.querySelector('.touch-move')!.insertAdjacentHTML('beforeend','<button data-touch-key="shift" aria-label="按住冲刺">冲刺</button>');
+bindTouchKeys(document.querySelectorAll<HTMLElement>('[data-move],[data-touch-key]'),touchKeys,b=>b.dataset.move??b.dataset.touchKey!,()=>game.phase==='playing');
 function drawMap(){
   const c=map;const W=432,H=256;const px=(x:number)=>(x+60)/120*W,pz=(z:number)=>(z+27)/70*H;
   c.clearRect(0,0,W,H);c.fillStyle='#246d6b';c.fillRect(0,0,W,H);c.beginPath();c.moveTo(0,0);c.lineTo(W,0);for(let x=60;x>=-60;x-=2)c.lineTo(px(x),pz(beach(x)));c.closePath();c.fillStyle='#aaae83';c.fill();
@@ -109,10 +111,10 @@ function renderUI(){
 }
 let last=performance.now(),uiTime=0;
 function frame(now:number){const dt=Math.min((now-last)/1000,.05);last=now;
-  if(game.phase==='playing'){game.heading+=(Number(keys.has('arrowleft'))-Number(keys.has('arrowright')))*dt*1.7;world.pitch=Math.max(-1.12,Math.min(1.08,world.pitch+(Number(keys.has('arrowup'))-Number(keys.has('arrowdown')))*dt*1.25));}
-  const movement=relativeMovement(Number(keys.has('w'))-Number(keys.has('s')),Number(keys.has('d'))-Number(keys.has('a')),game.heading);
-  game.step(dt,{...movement,sprint:keys.has('shift'),facing:game.heading});
-  if((keys.has(' ')||mouseBite)&&game.phase==='playing')game.bite();sound.environment(world.under,game.sandHidden);while(game.sounds.length)sound.play(game.sounds.shift()!);
+  if(game.phase==='playing'){game.heading+=(Number(hasKey('arrowleft'))-Number(hasKey('arrowright')))*dt*1.7;world.pitch=Math.max(-1.12,Math.min(1.08,world.pitch+(Number(hasKey('arrowup'))-Number(hasKey('arrowdown')))*dt*1.25));}
+  const movement=relativeMovement(Number(hasKey('w'))-Number(hasKey('s')),Number(hasKey('d'))-Number(hasKey('a')),game.heading);
+  game.step(dt,{...movement,sprint:hasKey('shift'),facing:game.heading});
+  if((hasKey(' ')||mouseBite)&&game.phase==='playing')game.bite();sound.environment(world.under,game.sandHidden);while(game.sounds.length)sound.play(game.sounds.shift()!);
   world.update(game,dt);uiTime+=dt;if(uiTime>.075){renderUI();uiTime=0;}requestAnimationFrame(frame);
 }
 renderUI();requestAnimationFrame(frame);

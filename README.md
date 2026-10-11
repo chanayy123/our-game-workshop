@@ -9,11 +9,11 @@
 | 鹈鹕骑行 | [pelican-pedal](games/pelican-pedal) | [开始骑行](https://chanayy123.github.io/our-game-workshop/pelican-pedal/) | 键鼠 / 触屏 |
 | 逃离恐龙岛 | [dinosaur-island](games/dinosaur-island) | [进入岛屿](https://chanayy123.github.io/our-game-workshop/) | 键鼠 / 平板触控 |
 | 溪流手记 | [riverkeeper](games/riverkeeper) | [踏入溪流](https://chanayy123.github.io/our-game-workshop/riverkeeper/) | 键鼠 / 触屏 |
-| 不许动，盆栽！ | [midnight-masquerade](games/midnight-masquerade) | [开始躲猫猫](https://chanayy123.github.io/our-game-workshop/midnight-masquerade/) | 电脑键鼠 |
-| 白鲨海峡 | [shark-sea-survival](games/shark-sea-survival) | [启航](https://chanayy123.github.io/our-game-workshop/shark-sea-survival/) | 电脑键鼠 |
+| 不许动，盆栽！ | [midnight-masquerade](games/midnight-masquerade) | [开始躲猫猫](https://chanayy123.github.io/our-game-workshop/midnight-masquerade/) | 键鼠 / 平板触控 |
+| 白鲨海峡 | [shark-sea-survival](games/shark-sea-survival) | [启航](https://chanayy123.github.io/our-game-workshop/shark-sea-survival/) | 键鼠 / 平板触控 |
 | 伏沙猎手 | [sandjaw](games/sandjaw) | [潜入海岸](https://chanayy123.github.io/our-game-workshop/sandjaw/) | 键鼠 / 触屏 |
 
-触屏标签表示已有触屏操作代码，不表示所有真实平板性能都已通过测试。需要电脑键鼠的两款游戏保留原操作方式。
+六款游戏按触摸能力显示按钮，支持平板横竖屏、桌面网站模式和多指操作。左下角“触屏按钮：开 / 关”可以手动切换。操作说明见 [平板使用](docs/TABLET.md)。浏览器触摸模拟已验证；真实 iPad/Safari、Android 平板和 GPU 性能仍需设备验收。
 
 ## 开发
 
@@ -27,6 +27,7 @@ npm test -- shark-sea-survival
 npm run build
 npx playwright install --with-deps chromium
 npm run test:site
+npm run test:tablet
 npm run preview
 ```
 
