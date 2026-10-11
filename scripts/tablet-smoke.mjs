@@ -37,6 +37,8 @@ try{
  for(const game of selected){
   const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,isMobile:false,deviceScaleFactor:1});
   page=await context.newPage();page.on('pageerror',e=>report.errors.push({game:game.id,error:e.message}));page.on('requestfailed',r=>report.errors.push({game:game.id,url:r.url(),error:r.failure()?.errorText}));page.on('response',r=>{if(r.status()>=400)report.errors.push({game:game.id,url:r.url(),status:r.status()});});
+  // Preserve real tap/actionability checks while software WebGL settles in CI.
+  page.setDefaultTimeout(120000);
   await page.goto(new URL((game.path||'./')+'?qa=1',base).href,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.querySelector('#start')&&!document.querySelector('#start').disabled&&document.querySelector('canvas'),null,{timeout:120000});
   check(`${game.id}: tablet detects touch without phone width`,await page.evaluate(()=>navigator.maxTouchPoints>0&&document.body.dataset.touchControls==='on'));

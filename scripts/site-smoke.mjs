@@ -38,6 +38,9 @@ try{
   await page.screenshot({path:path.join(root,'qa/gallery-mobile.png'),fullPage:true});await page.close();
   for(const game of selected){
     const page=await browser.newPage({viewport:{width:960,height:600}});errors(page,game.id);
+    // Software WebGL can stall the first UI frames before balanced quality is selected.
+    // Keep actionability checks and real input, but allow the slow CI renderer to settle.
+    page.setDefaultTimeout(120000);
     await page.goto(new URL(game.path||'./',base).href,{waitUntil:'domcontentloaded',timeout:120000});
     await page.waitForFunction(()=>{const start=document.querySelector('#start');return start&&!start.disabled&&document.querySelector('canvas');},null,{timeout:120000});
     check(`${game.id}: canvas and start ready`,await page.locator('canvas').count()>0);
