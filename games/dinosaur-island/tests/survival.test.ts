@@ -5,7 +5,7 @@ import { terrainHeight,riverCenter,riverDepth,riverSurface } from '../src/terrai
 import { SPECIES,isPrey,isHuntable } from '../src/species.ts';
 const pose={x:25,z:134,heading:Math.PI,speed:0};
 function advance(game:SurvivalSimulation,seconds:number,player=pose){for(let time=0;time<seconds-.000001;time+=.05)game.update(.05,player);}
-function preyAt(game:SurvivalSimulation,x:number,z:number){const c=game.creatures.find(c=>c.kind==='fox')!;game.creatures.splice(0,game.creatures.length,c);Object.assign(c,{x,z,active:true,alive:true,mode:'idle',timer:10,fear:0});return c;}
+function preyAt(game:SurvivalSimulation,x:number,z:number){const c=game.creatures.find(c=>c.kind==='young-diplodocus')!;game.creatures.splice(0,game.creatures.length,c);Object.assign(c,{x,z,active:true,alive:true,mode:'idle',timer:10,fear:0});return c;}
 test('food depletes over minutes; zero food drains health and ultimately kills',()=>{
   const game=new SurvivalSimulation();game.creatures.length=0;advance(game,399);
   assert.ok(game.hunger>0&&game.hunger<1);assert.equal(game.health,100);assert.equal(game.dead,false);
@@ -31,6 +31,7 @@ test('an actual nearby carcass is required; eating restores food once after comp
   assert.equal(game.beginEat(pose),false);c.alive=false;c.mode='dead';
   assert.equal(game.beginEat(pose),true);assert.equal(game.beginEat(pose),false);advance(game,1);
   assert.equal(game.meals,0);advance(game,1.25);assert.equal(game.meals,1);assert.ok(game.hunger>80);assert.equal(game.health,75);assert.equal(c.active,false);assert.equal(game.beginEat(pose),false);
+  advance(game,71,{...pose,x:90,z:134});assert.equal(c.alive,true);assert.equal(c.active,true);assert.equal(c.portions,1);assert.equal(c.health,c.maxHealth);
 });
 test('eating cannot heal a dead player and walking out of range cancels consumption',()=>{
   const game=new SurvivalSimulation(),c=preyAt(game,25,130);c.alive=false;c.mode='dead';game.hunger=40;
@@ -39,13 +40,15 @@ test('eating cannot heal a dead player and walking out of range cancels consumpt
 });
 test('roar frightens nearby prey; prey move and respect the river/ocean boundary',()=>{
   const game=new SurvivalSimulation();const c=preyAt(game,25,113);game.roar(pose);assert.ok(c.fear>0);
-  const before=c.z;advance(game,2);assert.notEqual(c.z,before);assert.ok(terrainHeight(c.x,c.z)>=.3);assert.ok(riverDepth(c.x,c.z)<.16);
+  const before=c.z;advance(game,.1);assert.equal(c.mode,'run');assert.equal(c.speed,4.2);advance(game,1.9);assert.notEqual(c.z,before);assert.ok(terrainHeight(c.x,c.z)>=.3);assert.ok(riverDepth(c.x,c.z)<.16);
 });
 test('reset starts a fresh population and economy',()=>{
   const game=new SurvivalSimulation();game.dead=true;game.hunger=0;game.health=0;game.kills=4;game.meals=3;game.creatures[0].active=false;game.reset();
   assert.equal(game.hunger,100);assert.equal(game.health,100);assert.equal(game.dead,false);assert.equal(game.kills,0);assert.equal(game.meals,0);
+  assert.equal(game.creatures.filter(c=>c.kind==='young-diplodocus').length,4);
+  assert.equal(Object.values(SPECIES).some(s=>s.name==='狐狸'),false);
   assert.equal(new Set(game.creatures.map(c=>c.kind)).size,7);assert.equal(game.creatures.length,18);
-  assert.equal(game.creatures.filter(c=>SPECIES[c.kind].group==='dinosaur').length,7);assert.equal(game.creatures.filter(c=>isPrey(c)&&c.active&&c.alive).length,8);
+  assert.equal(game.creatures.filter(c=>SPECIES[c.kind].group==='dinosaur').length,11);assert.equal(game.creatures.filter(c=>isPrey(c)&&c.active&&c.alive).length,8);
 });
 test('raptors flee, can be hunted and eaten; large herbivores are not edible targets',()=>{
   const game=new SurvivalSimulation(),c=preyAt(game,25,130);c.kind='raptor';game.hunger=40;

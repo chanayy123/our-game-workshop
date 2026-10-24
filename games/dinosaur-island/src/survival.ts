@@ -30,8 +30,8 @@ export class SurvivalSimulation {
     this.deathCause='starvation';
     this.attackTimer=0;this.attackPending=false;this.cooldown=0;this.meal=null;this.warned=false;this.events=[];this.random=randomGenerator(1987);
     this.creatures.length=0;
-    const foxes=[[27,116],[-16,98],[-26,55],[-31,-9]];
-    foxes.forEach(([x,z],i)=>this.add(`fox-${i}`,'fox',x,z,1.8+this.random()*.3));
+    const youngDiplodocus=[[27,116],[-16,98],[-26,55],[-31,-9]];
+    youngDiplodocus.forEach(([x,z],i)=>this.add(`young-diplodocus-${i}`,'young-diplodocus',x,z,1.8+this.random()*.3));
     this.add('rex-0','dinosaur',63,35,10);
     [[42,113],[49,109],[56,73],[-39,-28]].forEach(([x,z],i)=>this.add(`raptor-${i}`,'raptor',x,z,3.1+i*.18));
     [[-5,108],[-12,48]].forEach(([x,z],i)=>this.add(`rhino-${i}`,'rhino',x,z,3.9));
