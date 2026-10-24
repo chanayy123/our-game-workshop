@@ -1,3 +1,19 @@
+# 梁龙幼崽替换狐狸验证（2026-10-24）
+
+本次仅修改 `games/dinosaur-island`。4 只狐狸改为食草的梁龙幼崽，复用现有梁龙模型、骨架和 Idle / Walk 动画，保留原小型猎物的体长、数量、出生点、移动与碰撞参数。其余居民和素材文件均未改动；成年梁龙仍不可捕食，总居民为 18 个，可捕食目标为 8 个。
+
+- `npm test -- dinosaur-island` 通过。为展开当前 Node 24 默认按文件汇总的结果，另运行 `node --experimental-strip-types --test --test-isolation=none games/dinosaur-island/tests/*.test.ts`：35/35 通过。原狐狸捕猎/进食/逃跑回归现覆盖幼崽，并补充数量、分类、逃跑速度与进食后远处刷新检查；其他生存、移动、战斗、倒树、音频和翼龙规则通过。
+- `npm run build -- dinosaur-island`：类型检查、该游戏生产构建和站点组装通过，使用其他五款游戏已存在的构建。保留原恐龙岛根地址和画廊地址；Vite 既有的 500 kB 大包提示仍在。
+- `npm run test:site -- dinosaur-island`：10/10 通过。生产站点子目录、画廊、资源加载、真实开始/键盘移动及返回链接通过，零浏览器或资源错误。
+- `npm run test:tablet -- dinosaur-island`：14/14 通过。使用真实 CDP 触控事件检查横屏 1024×768 / 竖屏 768×1024、按住移动、取消与松手停止、拖动视角、吼叫、摄影返回、控件切换和布局，零浏览器或资源错误。
+
+- 在游戏目录运行 `PLAYWRIGHT_EXECUTABLE_PATH=/usr/bin/chromium node tools/herbivore-smoke.mjs`：12/12 通过。确认 4 只幼崽复用梁龙 Idle / Walk 动画、模型只请求一次且不请求狐狸模型、靠近逃跑、暂停冻结，以及霸王龙和迅猛龙用真实 Space / E 完成咬倒、单份进食、食物恢复和重开恢复；零运行/资源错误。场景布置仅用现有开发 `?qa=1` 入口，正式站点检查使用正常生产地址。
+- 已查看实际游戏截图 `qa/herbivore-alive.png`、`qa/herbivore-trex-hunt.png`、`qa/herbivore-raptor-hunt.png` 及根目录桌面截图；报告为 `qa/herbivore-browser-report.json`，生成文件不提交。专项首次在等待攻击动画结束时达到 120 秒超时（截图已显示成功咬倒），重跑改用 640×480 视口及 240 秒状态等待后完整通过；没有加速游戏时钟或更改游戏规则。
+
+浏览器为系统 Chromium 154.0.8037.57、无头模式和软件 WebGL。Playwright Chromium 下载受环境网络策略限制，两个根目录套件通过临时启动适配使用 `/usr/bin/chromium`，未改共享脚本。真实平板 GPU、Safari、长期游玩以及完整历史战斗/倒树浏览器流程未重测；相关规则由本次单元测试覆盖。
+
+以下保留历史验证记录。
+
 # 翼龙居民验证（2026-10-11）
 
 本次只修改 `games/dinosaur-island`：新增 1 只翼龙空中居民，总居民数从 17 变为 18。原创程序模型包含长喙、头冠、膜翼与振翅，未下载或替换任何现有素材，也未新增依赖。翼龙在出生海岸附近盘旋，不参与捕猎或玩家角色切换。
